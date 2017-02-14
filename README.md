@@ -29,3 +29,8 @@ Run `ng github-pages:deploy` to deploy to GitHub Pages.
 ## Further help
 
 To get more help on the `angular-cli` use `ng help` or go check out the [Angular-CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+
+## Electron
+http://www.behaveonrails.com/?p=806<br>
+https://blog.couchbase.com/create-a-desktop-app-that-syncs-using-electron-pouchdb-ionic-2-and-couchbase/<br>
+https://github.com/electron/electron-quick-start

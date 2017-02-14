@@ -69,8 +69,8 @@ export class AppComponent {
     }
 
   getRpt (): Observable<string> {
-    // let rptUrl: string = 'http://vpn.restomax.com:8080';
-    let rptUrl: string = 'http://10.0.0.69:8080/view';
+     let rptUrl: string = 'http://vpn.restomax.com:8080/view';
+    //let rptUrl: string = 'http://10.0.0.69:8080/view';
 
     let params = new URLSearchParams();
     params.set('view', this.Rpt.name);
