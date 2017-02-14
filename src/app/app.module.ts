@@ -6,6 +6,7 @@ import {HttpModule} from "@angular/http";
 import {AppComponent, DialogContent} from "./app.component";
 import {RouterModule} from "@angular/router";
 import {MaterialModule, MaterialRootModule} from "@angular/material";
+import { DatepickerModule } from 'angular2-material-datepicker'
 
 @NgModule({
   declarations: [
@@ -18,7 +19,8 @@ import {MaterialModule, MaterialRootModule} from "@angular/material";
     HttpModule,
     RouterModule,
     MaterialModule,
-    MaterialRootModule
+    MaterialRootModule,
+    DatepickerModule
   ],
   providers: [],
   entryComponents: [DialogContent],

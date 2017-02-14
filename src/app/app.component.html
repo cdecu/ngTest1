@@ -2,43 +2,88 @@
 
   <md-sidenav #sidenav mode="side" class="app-sidenav">
     <md-list class="app-list">
-    <md-list-item *ngFor="let food of foods">
-      <h3 md-line>{{food.name}}</h3>
-      <p md-line class="demo-secondary-text">{{food.rating}}</p>
+    <md-list-item *ngFor="let rpt of Rpts">
+      <h3 md-line>{{rpt.name}}</h3>
+      <p md-line class="demo-secondary-text">{{rpt.descr}}</p>
     </md-list-item>
     </md-list>
   </md-sidenav>
 
   <md-toolbar color="primary">
-    <button class="app-icon-button" (click)="sidenav.toggle()">
-      <i class="material-icons app-toolbar-menu">menu</i>
-    </button>
-    {{title}}
+    <!--<button class="app-icon-button" (click)="sidenav.toggle()">-->
+      <!--<i class="material-icons app-toolbar-menu">menu</i>-->
+    <!--</button>-->
+    <!--{{title}}-->
     <span class="app-toolbar-filler"></span>
     <button md-button (click)="isDarkTheme = !isDarkTheme">TOGGLE DARK THEME</button>
   </md-toolbar>
 
   <div class="app-content">
+    <md-card class="app-input-section">
+      <md-input [(ngModel)]="IID">
+        <md-placeholder>
+          <i class="material-icons app-input-icon">android</i> IID
+        </md-placeholder>
+        <md-hint align="end">
+          {{IID.length}} / 50
+        </md-hint>
+      </md-input>
+
+      <md-input [(ngModel)]="PrivateKey"  placeholder="PrivateKey" maxlength="50">
+        <md-hint align="end">
+          {{PrivateKey.length}} / 50
+        </md-hint>
+      </md-input>
+
+      <!--<material-datepicker placeholder="D1">-->
+        <!--<md-hint align="begin">From Date</md-hint>-->
+      <!--</material-datepicker>-->
+
+      <!--<md-input [(ngModel)]="D1"  placeholder="D1" maxlength="50">-->
+        <!--<md-hint align="end">-->
+          <!--{{D1.length}} / 50-->
+        <!--</md-hint>-->
+      <!--</md-input>-->
+
+      <md-select [(ngModel)]="Format.name" placeholder="Export Format" >
+        <md-option *ngFor="let fmt of Formats" [value]="fmt.name">
+          {{ fmt.descr }}
+        </md-option>
+      </md-select>
+
+      <md-select [(ngModel)]="Rpt.name" placeholder="Report" >
+        <md-option *ngFor="let rpt of Rpts" [value]="rpt.name">
+          {{ rpt.descr }}
+        </md-option>
+      </md-select>
+
+
+    </md-card>
 
     <md-card class="example-card">
-      <md-card-header>
-        <div md-card-avatar class="example-header-image"></div>
-        <md-card-title>{{currentRpt.name}}</md-card-title>
-        <md-card-subtitle>{{currentRpt.params}}</md-card-subtitle>
-      </md-card-header>
+      <!--<md-card-header>-->
+        <!--<div md-card-avatar class="example-header-image"></div>-->
+        <!--<md-card-title>{{currentRpt.name}}</md-card-title>-->
+        <!--<md-card-subtitle>{{currentRpt.params}}</md-card-subtitle>-->
+      <!--</md-card-header>-->
       <!--<img md-card-image src="assets/img/examples/shiba2.jpg">-->
-      <md-card-content *ngIf="currentRpt.loaded">
-          {{currentRpt.content}}
+      <md-card-content *ngIf="currentRpt.loaded==0">
+        <h1>{{currentRpt.error}}</h1>
       </md-card-content>
-      <md-card-content *ngIf="!currentRpt.loaded">
-          <md-spinner class="app-spinner"></md-spinner>
+      <md-card-content *ngIf="currentRpt.loaded==1">
+        <md-spinner class="app-spinner"></md-spinner>
+      </md-card-content>
+      <md-card-content *ngIf="currentRpt.loaded==2">
+        <pre>
+{{currentRpt.content}}
+        </pre>
       </md-card-content>
       <md-card-actions>
         <button md-button (click)="fetchRpt()">Reload</button>
         <button md-button>Copy</button>
       </md-card-actions>
     </md-card>
-
+<!--
     <md-card>
       <button md-button>FLAT</button>
       <button md-raised-button md-tooltip="This is a tooltip!">RAISED</button>
@@ -149,6 +194,7 @@
       <button md-raised-button (click)="showSnackbar()">SNACKBAR</button>
     </md-card>
 
+-->
   </div>
 
 </md-sidenav-layout>
