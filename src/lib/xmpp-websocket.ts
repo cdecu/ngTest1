@@ -1,10 +1,18 @@
-import { Subject, Observer, Observable } from 'rxjs';
+import { Subject } from 'rxjs/Subject';
+import { Observer } from 'rxjs/Observer';
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/observable/interval';
+import 'rxjs/add/operator/takeWhile';
+import 'rxjs/add/operator/distinctUntilChanged';
+import { XmppRmx } from './xmpp-rmx-interfaces';
+import {XmppRmxMessage} from "./xmpp-rmx-message";
 
 /// we inherit from the ordinary Subject
 export class XmppWebsocket<T> extends Subject<T> {
-  
+
   private xmppStatus = 0;
   private xmppClient: any = null;
+  private xmppMediator: any = null;
   private reconnectionObservable: Observable<number> = null;
   private connectionObserver: Observer<number>;
   public connectionStatus: Observable<number>;
@@ -14,10 +22,10 @@ export class XmppWebsocket<T> extends Subject<T> {
   private resultSelector?: (e: MessageEvent) => any = null;
   private serializer?: (data: any) => string = null;
 
-  private xmppParam = {
-    jid: 'mediator@vpn.restomax.com',
-    password: 'MI_456321_MI',
-    resource: 'testX',
+  private xmppParam: XmppRmx.IxmppRmxConnectParams = {
+    jid: 'carlos-xe7@vpn.restomax.com',
+    password: 'carlos-xe7',
+    resource: 'testX' + Math.random().toString(36).substring(7),
     transport: 'websocket',
     server: 'vpn.restomax.com',
     wsURL: 'ws://vpn.restomax.com:7070/ws/',
@@ -28,13 +36,13 @@ export class XmppWebsocket<T> extends Subject<T> {
   /// we can override it in the constructor
   defaultResultSelector = (e: MessageEvent) => {
     return JSON.parse(e.data);
-    };
+    }
 
   /// when sending a message, we encode it to JSON
   /// we can override it in the constructor
   defaultSerializer = (data: any): string => {
     return JSON.stringify(data);
-    };
+    }
 
   private SetXmppStatus(Value: number): void {
     if (this.xmppStatus !== Value) {
@@ -44,10 +52,9 @@ export class XmppWebsocket<T> extends Subject<T> {
     } else {
       console.log('XMPP Stay in Status ', Value);
       }
-    }
+    };
 
-  constructor(
-  ) {
+  constructor() {
     super();
     console.log('XmppWebsocket Create');
 
@@ -88,17 +95,19 @@ export class XmppWebsocket<T> extends Subject<T> {
       this.SetXmppStatus(0);
     });
     this.xmppClient.on('raw:incoming', function (xml) {
-      //console.log('raw:incoming');
-      //console.log(xml);
+      // console.log('raw:incoming');
+      // console.log(xml);
     });
     this.xmppClient.on('raw:outgoing', function (xml) {
-      //console.log('raw:outgoing');
-      //console.log(xml);
+      // console.log('raw:outgoing');
+      // console.log(xml);
     });
     this.xmppClient.on('message', (message) => {
-      console.log(message);
+      // console.log(message);
       const s: string = message.body;
-      if (s.indexOf('MEDIATOR_OK') > 0) {
+      let msg = new XmppRmxMessage(s);
+      if (msg.cmd === 'MEDIATOR_OK') {
+        this.xmppMediator=message.from;
         this.SetXmppStatus(4);
         return;
         }
@@ -151,8 +160,8 @@ export class XmppWebsocket<T> extends Subject<T> {
     try {
       this.SetXmppStatus(3);
       this.xmppClient.sendMessage({
-        to  : 'mediator2@vpn.restomax.com',
-        body: '<mediator2><MEDIATOR_HELO><mediator2@vpn.restomax.com/testX>'
+        to  : 'mediator@vpn.restomax.com',
+        body: '<mediator><MEDIATOR_HELO><carlos-xe7@vpn.restomax.com/' + this.xmppParam.resource + '>'
       });
     } catch (err) {
       /// in case of an error with a loss of connection, we restore it
@@ -164,10 +173,11 @@ export class XmppWebsocket<T> extends Subject<T> {
   send(data: string): void {
     console.log('XmppWebsocket:helo', this.xmppStatus);
     try {
-      this.SetXmppStatus(3);
+      // this.SetXmppStatus(3);
       this.xmppClient.sendMessage({
-        to  : 'mediator2@vpn.restomax.com/MediatorSvc_RMX_RX10_1.5.17.2.18',
-        body: '<mediator2@vpn.restomax.com/MediatorSvc_RMX_RX10_1.5.17.2.18><ASK_VIEW><mediator@vpn.restomax.com/testX>' + data
+        to  : this.xmppMediator.full,
+        body: '<' + this.xmppMediator.bare + '><ASK_VIEW><carlos-xe7@vpn.restomax.com/' +
+        this.xmppParam.resource + '>' + data
       });
     } catch (err) {
       /// in case of an error with a loss of connection, we restore it

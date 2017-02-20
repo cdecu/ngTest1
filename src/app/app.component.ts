@@ -57,7 +57,7 @@ export class AppComponent {
         console.log(message);
         this.currentRpt.content = message;
         this.currentRpt.loaded = 2;
-        this.bgURL             = 'http://localhost:8080/Image?Image=200&IID=' + this.IID + '&staff=221266';
+        this.bgURL             = 'http://10.0.0.69:8080/Image?Image=200&IID=' + this.IID + '&staff=221266';
         },
       (error) => { console.log(error); },
       () => { console.log('xmpp:Closed'); }
@@ -79,13 +79,13 @@ export class AppComponent {
     params.set('D1', this.D1);
     params.set('D2', this.D2);
     }
-  
+
   private static extractData(res: Response) {
     const body = res.text();
     // console.log(body);
     return body || { };
   }
-  
+
   private static handleError (error: Response | any) {
     let errMsg: string;
     // console.error(error);
@@ -99,10 +99,11 @@ export class AppComponent {
     console.error(errMsg);
     return Observable.throw(errMsg);
   }
-  
+
   getRpt (): Observable<string> {
     // let rptUrl: string = 'http://vpn.restomax.com:8080/view';
-    const rptUrl = 'http://localhost:8080/view';
+    // const rptUrl = 'http://localhost:8080/view';
+    const rptUrl = 'http://10.0.0.69:8080/view';
     const params = new URLSearchParams();
     this.assignParams(params);
     return this.http.get(rptUrl, {search: params} )
@@ -121,7 +122,7 @@ export class AppComponent {
           Rpt => {
             this.currentRpt.content = Rpt;
             this.currentRpt.loaded = 2;
-            this.bgURL              = 'http://localhost:8080/Image?Image=200&IID=' + this.IID + '&staff=221266';
+            this.bgURL              = 'http://10.0.0.69:8080/Image?Image=200&IID=' + this.IID + '&staff=221266';
           },
           error => {
             this.currentRpt.error = <any>error;
