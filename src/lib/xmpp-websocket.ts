@@ -2,21 +2,21 @@ import { Subject, Observer, Observable } from 'rxjs';
 
 /// we inherit from the ordinary Subject
 export class XmppWebsocket<T> extends Subject<T> {
-
-  private xmppClient: any = null;
+  
   private xmppStatus = 0;
+  private xmppClient: any = null;
   private reconnectionObservable: Observable<number> = null;
   private connectionObserver: Observer<number>;
   public connectionStatus: Observable<number>;
 
-  private reconnectInterval = 5000;  /// pause between connections
+  private reconnectInterval = 10000;  /// pause between connections
   private reconnectAttempts = 5000;  /// number of connection attempts
   private resultSelector?: (e: MessageEvent) => any = null;
   private serializer?: (data: any) => string = null;
 
   private xmppParam = {
-    jid: 'peerinfo@vpn.restomax.com',
-    password: '150320',
+    jid: 'mediator@vpn.restomax.com',
+    password: 'MI_456321_MI',
     resource: 'testX',
     transport: 'websocket',
     server: 'vpn.restomax.com',
@@ -88,12 +88,12 @@ export class XmppWebsocket<T> extends Subject<T> {
       this.SetXmppStatus(0);
     });
     this.xmppClient.on('raw:incoming', function (xml) {
-      console.log('raw:incoming');
-      console.log(xml);
+      //console.log('raw:incoming');
+      //console.log(xml);
     });
     this.xmppClient.on('raw:outgoing', function (xml) {
-      console.log('raw:outgoing');
-      console.log(xml);
+      //console.log('raw:outgoing');
+      //console.log(xml);
     });
     this.xmppClient.on('message', (message) => {
       console.log(message);
@@ -167,7 +167,7 @@ export class XmppWebsocket<T> extends Subject<T> {
       this.SetXmppStatus(3);
       this.xmppClient.sendMessage({
         to  : 'mediator2@vpn.restomax.com/MediatorSvc_RMX_RX10_1.5.17.2.18',
-        body: '<mediator2@vpn.restomax.com/MediatorSvc_RMX_RX10_1.5.17.2.18><ASK_VIEW><peerinfo@vpn.restomax.com/testX>' + data
+        body: '<mediator2@vpn.restomax.com/MediatorSvc_RMX_RX10_1.5.17.2.18><ASK_VIEW><mediator@vpn.restomax.com/testX>' + data
       });
     } catch (err) {
       /// in case of an error with a loss of connection, we restore it
