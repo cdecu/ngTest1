@@ -2,7 +2,7 @@
 export namespace XmppRmx {
   // ..................................................................................................................
   /**
-   * XmppRmxConnectParams
+   * IxmppRmxConnectParams
    */
   export interface IxmppRmxConnectParams {
     jid: string;
@@ -16,11 +16,24 @@ export namespace XmppRmx {
 
   // ..................................................................................................................
   /**
-   * XmppRmxConnectParams
+   * IxmppRmxMessage
    */
-    // (\<\?xml\>)(.*)$|\<[^\?\>]*\>
   export interface IxmppRmxMessage {
-    label?: string;
+    from: string;
+    cmd: string;
+    to: string;
+    data: string;
     parse(rawMessage: string): boolean;
+  }
+
+// ..................................................................................................................
+/**
+ * IxmppRmxMessageOut
+ */
+export interface IxmppRmxMessageOut {
+  to: string;
+  body: string;
+  buildMediatorHelo(Mediator: any, My: string): void;
+  buildMediatorCmd(Mediator: any, Cmd: string, My: string): void;
   }
 }

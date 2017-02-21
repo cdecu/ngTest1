@@ -33,6 +33,6 @@ To get more help on the `angular-cli` use `ng help` or go check out the [Angular
 ## Electron
 http://www.behaveonrails.com/?p=806<br>
 https://blog.couchbase.com/create-a-desktop-app-that-syncs-using-electron-pouchdb-ionic-2-and-couchbase/<br>
-https://github.com/electron/electron-quick-start
+https://github.com/electron/electron-quick-start<br>
 https://gearheart.io/blog/auto-websocket-reconnection-with-rxjs/
 

@@ -6,6 +6,7 @@ import {HttpModule} from '@angular/http';
 import {AppComponent} from './app.component';
 import {RouterModule} from '@angular/router';
 import {MaterialModule, MaterialRootModule} from '@angular/material';
+//import { DatepickerModule } from 'angular2-material-datepicker'
 import {XmppWebsocket} from '../lib/xmpp-websocket';
 
 @NgModule({
@@ -18,7 +19,8 @@ import {XmppWebsocket} from '../lib/xmpp-websocket';
     HttpModule,
     RouterModule,
     MaterialModule,
-    MaterialRootModule
+    MaterialRootModule,
+    //DatepickerModule
   ],
   providers: [
     XmppWebsocket

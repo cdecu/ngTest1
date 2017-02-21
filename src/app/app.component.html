@@ -21,8 +21,8 @@
 
     <md-card>
       <md-card-actions>
-        <button md-button (click)="fetchRpt()">WebBroker [{{Rpt.name}}]</button>
-        <button md-button (click)="xmppRpt()">XMPP [{{Rpt.name}}]</button>
+        <button md-button (click)="httpFetchRpt()">WebBroker [{{Rpt.name}}]</button>
+        <button md-button (click)="xmppGetRpt()">XMPP [{{Rpt.name}}]</button>
         <button md-button (click)="clearRpt()">Clear</button>
         <md-input [(ngModel)]="D1">
           <md-placeholder><i class="material-icons app-input-icon">date_range</i> D1</md-placeholder>
@@ -30,6 +30,8 @@
         <md-input [(ngModel)]="D2">
           <md-placeholder><i class="material-icons app-input-icon">date_range</i> D2</md-placeholder>
         </md-input>
+        <!--<material-datepicker [(date)]="D2">-->
+        <!--</material-datepicker>-->
       </md-card-actions>
 
       <md-card-content class="example-card" *ngIf="currentRpt.loaded==0">
@@ -42,8 +44,8 @@
         <pre>{{currentRpt.content}}</pre>
       </md-card-content>
       <md-card-actions>
-        <button md-button (click)="fetchRpt()">WebBroker [{{Rpt.name}}]</button>
-        <button md-button (click)="xmppRpt()">XMPP [{{Rpt.name}}]</button>
+        <button md-button (click)="httpFetchRpt()">WebBroker [{{Rpt.name}}]</button>
+        <button md-button (click)="xmppGetRpt()">XMPP [{{Rpt.name}}]</button>
         <button md-button (click)="clearRpt()">Clear</button>
       </md-card-actions>
     </md-card>
