@@ -5,27 +5,26 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/throw';
-import {XmppWebsocket} from '../lib/xmpp-websocket';
+import {WindowRefService} from '../lib/windowRef';
 import {XmppRmx} from '../lib/xmpp-rmx-interfaces';
+import {XmppWebsocket} from '../lib/xmpp-websocket';
 import {XmppRmxMessageOut} from '../lib/xmpp-rmx-message';
 
+///   ..................................................................................................................
+///   ..................................................................................................................
+///   ..................................................................................................................
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-
-  public static webBroketUrl = 'http://vpn.restomax.com:8080/';
-  // const rptUrl = 'http://localhost:8080/view';
-  //const rptUrl = 'http://10.0.0.69:8080/view';
-
-  public isDarkTheme = false;
-  public IID = 'cdecu';
-  public PrivateKey = '1611041114';
+  
+  public static webBroketUrl : string;
+  public IID : string;
+  public PrivateKey : string;
   public D1 = '2016-01-01'; // new Date(2009/01/01);
   public D2 = '2016-01-31';
-  //public D2 = new Date('2016-01-31');
 
   public Rpts = [
     {name: '010', descr: 'ModePays'},
@@ -47,35 +46,79 @@ export class AppComponent {
   public currentRpt = {loaded: 0, name: 'Test', params: 'NoParams', error: 'Not Loaded', content: 'NoContent'};
   public bgURL: string = null;
 
-  constructor(private http: Http, private xmpp: XmppWebsocket) {
+  /// ..................................................................................................................
+  /**
+   *
+   * @param winRef
+   * @param http
+   * @param xmpp
+   * @returns {any}
+   */
+  constructor(private winRef: WindowRefService, private http: Http, private xmpp: XmppWebsocket) {
     console.log('App Create');
+    this.loadArgs();
+    this.xmpp.init();
     xmpp.connectionStatus.subscribe((isConnected: number) => {
       // show somewhere . lock gui if isConnected not 4 ?
       console.log(isConnected, XmppWebsocket.statusDesc[isConnected]);
       });
+    
     xmpp.subscribe(
       (message) => { if (message.isValid) {this.showMessage(message); } else {this.showErrorMessage(message); }},
       (error) => this.showError(error),
       () => this.showError('xmpp:Closed')
       );
     }
-
+  
+  /// ..................................................................................................................
+  /**
+   * Load command line args prepared in electron main
+   */
+  private loadArgs() {
+  try {
+      this.IID = 'cdecu';
+      this.PrivateKey = '';
+      AppComponent.webBroketUrl = 'http://vpn.restomax.com:8080/';
+      let sharedObj = this.winRef.nativeWindow.require('electron').remote.getGlobal('sharedObj');
+      this.IID = sharedObj.iid;
+      this.PrivateKey = sharedObj.pk;
+      //= 'http://vpn.restomax.com:8080/';
+      // const rptUrl = 'http://localhost:8080/view';
+      // const rptUrl = 'http://10.0.0.69:8080/view';
+  } catch (err) {
+      // just ignore
+  }   }
+  /// ..................................................................................................................
+  /**
+   *
+   * @param message
+   */
   private showMessage(message: XmppRmx.IxmppRmxMessage) {
     this.currentRpt.loaded  = 2;
     this.currentRpt.content = message.data;
     this.bgURL              = AppComponent.webBroketUrl + 'Image?Image=200&IID=' + this.IID + '&staff=221266';
   }
+  /// ..................................................................................................................
+  /**
+   *
+   * @param message
+   */
   private showErrorMessage(message: XmppRmx.IxmppRmxMessage) {
     this.currentRpt.loaded  = 0;
     this.currentRpt.error   = message.data;
     this.bgURL              = null;
   }
+  /// ..................................................................................................................
+  /**
+   *
+   * @param error
+   */
   private showError(error: any) {
     this.currentRpt.loaded  = 0;
     this.currentRpt.error   = error;
     this.bgURL              = null;
   }
-
+  /// ..................................................................................................................
   //private static yyyymmdd = function(d:Date): number{
   //  var yyyy = d.getFullYear();
   //  var mm = d.getMonth() < 9 ? (d.getMonth() + 1) : (d.getMonth() + 1);
@@ -93,7 +136,10 @@ export class AppComponent {
     params.set('D2', this.D2);
     //params.set('D2', AppComponent.yyyymmdd(this.D2));
     }
-
+  /**
+   *
+   * @returns {string}
+   */
   private assignXmppRequesParams(): string {
     let data = XmppRmxMessageOut.addParam('IID', this.IID);
     data += XmppRmxMessageOut.addParam('Staff', '221266');
@@ -106,13 +152,23 @@ export class AppComponent {
     //data += XmppRmxMessageOut.addParam('D2',AppComponent.yyyymmdd(this.D2).toString());
     return data;
     }
-
+  /// ..................................................................................................................
+  /**
+   *
+   * @param res
+   * @returns {string|{}}
+   */
   private static extractData(res: Response) {
     const body = res.text();
     // console.log(body);
     return body || { };
     }
-
+  
+  /**
+   *
+   * @param error
+   * @returns {any}
+   */
   private static handleError (error: Response | any) {
     let errMsg: string;
     // console.error(error);
@@ -126,12 +182,18 @@ export class AppComponent {
     console.error(errMsg);
     return Observable.throw(errMsg);
   }
-
+  /// ..................................................................................................................
+  /**
+   *
+   */
   public clearRpt() {
     this.currentRpt.loaded = 0;
     this.bgURL = null;
   }
-
+  /// ..................................................................................................................
+  /**
+   *
+   */
   public xmppGetRpt(): void {
     if (this.currentRpt.loaded === 1) {
       console.log('Please wait');
@@ -142,7 +204,11 @@ export class AppComponent {
     const data = this.assignXmppRequesParams();
     this.xmpp.sendMsg('ASK_VIEW', data);
     }
-
+  /// ..................................................................................................................
+  /**
+   *
+   * @returns {Observable<R>}
+   */
   public httpGetRpt (): Observable<string> {
     const rptUrl: string = AppComponent.webBroketUrl + 'view';
     const params = new URLSearchParams();
@@ -151,7 +217,10 @@ export class AppComponent {
       .map(AppComponent.extractData)
       .catch(AppComponent.handleError);
   }
-
+  /// ..................................................................................................................
+  /**
+   *
+   */
   httpFetchRpt( ): void {
     if (this.currentRpt.loaded === 1) {
       console.log('Please wait');
