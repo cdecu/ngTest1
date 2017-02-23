@@ -7,16 +7,18 @@
 
   <div class="app-content">
     <md-card class="app-input-section">
-      <md-input [(ngModel)]="IID">
+      <span class="params-input-section">
+      <md-input [(ngModel)]="IID" required maxlength="25">
         <md-placeholder><i class="material-icons app-input-icon">android</i> IID</md-placeholder>
       </md-input>
-      <md-input [(ngModel)]="PrivateKey"  placeholder="PrivateKey" maxlength="50"></md-input>
+      <md-input [(ngModel)]="PrivateKey"  placeholder="PrivateKey" maxlength="25"></md-input>
       <md-select [(ngModel)]="Rpt.name" placeholder="Report" >
         <md-option *ngFor="let rpt of Rpts" [value]="rpt.name">{{ rpt.descr }}</md-option>
       </md-select>
       <md-select [(ngModel)]="Format.name" placeholder="Export Format" >
         <md-option *ngFor="let fmt of Formats" [value]="fmt.name">{{ fmt.descr }}</md-option>
       </md-select>
+      </span>
     </md-card>
 
     <md-card>
@@ -24,14 +26,14 @@
         <button md-button (click)="httpFetchRpt()">WebBroker [{{Rpt.name}}]</button>
         <button md-button (click)="xmppGetRpt()">XMPP [{{Rpt.name}}]</button>
         <button md-button (click)="clearRpt()">Clear</button>
-        <md-input [(ngModel)]="D1">
-          <md-placeholder><i class="material-icons app-input-icon">date_range</i> D1</md-placeholder>
-        </md-input>
-        <md-input [(ngModel)]="D2">
-          <md-placeholder><i class="material-icons app-input-icon">date_range</i> D2</md-placeholder>
-        </md-input>
-        <!--<material-datepicker [(date)]="D2">-->
-        <!--</material-datepicker>-->
+        <!--<md-input type="date" [(ngModel)]="D1">-->
+          <!--<md-placeholder><i class="material-icons app-input-icon">date_range</i> D1</md-placeholder>-->
+        <!--</md-input>-->
+        <!--<md-input type="date" [(ngModel)]="D2">-->
+          <!--<md-placeholder><i class="material-icons app-input-icon">date_range</i> D2</md-placeholder>-->
+        <!--</md-input>-->
+        <material-datepicker [(date)]="D1">D1</material-datepicker>
+        <material-datepicker [(date)]="D2">D2</material-datepicker>
       </md-card-actions>
 
       <md-card-content class="example-card" *ngIf="currentRpt.loaded==0">
@@ -47,6 +49,7 @@
         <button md-button (click)="httpFetchRpt()">WebBroker [{{Rpt.name}}]</button>
         <button md-button (click)="xmppGetRpt()">XMPP [{{Rpt.name}}]</button>
         <button md-button (click)="clearRpt()">Clear</button>
+        <button md-button (click)="sayHelo()">Helo</button>
       </md-card-actions>
     </md-card>
   </div>

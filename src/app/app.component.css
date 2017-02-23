@@ -11,7 +11,7 @@ md-sidenav-layout.m2app-dark {
   color: #f8f8f2;
   padding-top: 30px;
   text-shadow: 1px 1px #030303;
-  min-height: 30pc;
+  min-height: 20pc;
   }
 .app-content {
   padding: 20px;
@@ -34,3 +34,9 @@ md-sidenav-layout.m2app-dark {
 .app-toolbar-filler {
   flex: 1 1 auto;
 }
+
+.params-input-section {
+  flex: 1 1 auto;
+}
+
+

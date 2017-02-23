@@ -6,9 +6,9 @@ import {HttpModule} from '@angular/http';
 import {AppComponent} from './app.component';
 import {RouterModule} from '@angular/router';
 import {MaterialModule, MaterialRootModule} from '@angular/material';
-//import { DatepickerModule } from 'angular2-material-datepicker'
+import { DatepickerModule } from 'angular2-material-datepicker';
 import {XmppWebsocket} from '../lib/xmpp-websocket';
-import { WindowRefService } from '../lib/windowRef';
+import { WindowRef } from '../lib/windowRef';
 
 @NgModule({
   declarations: [
@@ -21,11 +21,11 @@ import { WindowRefService } from '../lib/windowRef';
     RouterModule,
     MaterialModule,
     MaterialRootModule,
-    //DatepickerModule,
+    DatepickerModule,
   ],
   providers: [
     XmppWebsocket,
-    WindowRefService
+    WindowRef
   ],
   entryComponents: [],
   bootstrap: [AppComponent]

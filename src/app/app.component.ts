@@ -1,14 +1,14 @@
-///<reference path="../lib/xmpp-websocket.ts"/>
 import { Component } from '@angular/core';
 import { Http, URLSearchParams, Response } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/throw';
-import {WindowRefService} from '../lib/windowRef';
-import {XmppRmx} from '../lib/xmpp-rmx-interfaces';
+import {WindowRef} from '../lib/windowRef';
 import {XmppWebsocket} from '../lib/xmpp-websocket';
-import {XmppRmxMessageOut} from '../lib/xmpp-rmx-message';
+import { rmxUtils } from '../lib/xmpp-rmx-utils';
+import { rmxMsg } from '../lib/xmpp-rmx-message';
+import { rmxIntf } from '../lib/xmpp-rmx-interfaces';
 
 ///   ..................................................................................................................
 ///   ..................................................................................................................
@@ -19,12 +19,13 @@ import {XmppRmxMessageOut} from '../lib/xmpp-rmx-message';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  
-  public static webBroketUrl : string;
-  public IID : string;
-  public PrivateKey : string;
-  public D1 = '2016-01-01'; // new Date(2009/01/01);
-  public D2 = '2016-01-31';
+
+  public static webBroketUrl: string;
+  public isDarkTheme = false;
+  public IID: string;
+  public PrivateKey: string;
+  public D1: Date = null;
+  public D2: Date = null;
 
   public Rpts = [
     {name: '010', descr: 'ModePays'},
@@ -54,7 +55,7 @@ export class AppComponent {
    * @param xmpp
    * @returns {any}
    */
-  constructor(private winRef: WindowRefService, private http: Http, private xmpp: XmppWebsocket) {
+  constructor(private winRef: WindowRef, private http: Http, private xmpp: XmppWebsocket) {
     console.log('App Create');
     this.loadArgs();
     this.xmpp.init();
@@ -62,14 +63,14 @@ export class AppComponent {
       // show somewhere . lock gui if isConnected not 4 ?
       console.log(isConnected, XmppWebsocket.statusDesc[isConnected]);
       });
-    
+
     xmpp.subscribe(
       (message) => { if (message.isValid) {this.showMessage(message); } else {this.showErrorMessage(message); }},
       (error) => this.showError(error),
       () => this.showError('xmpp:Closed')
       );
     }
-  
+
   /// ..................................................................................................................
   /**
    * Load command line args prepared in electron main
@@ -79,7 +80,7 @@ export class AppComponent {
       this.IID = 'cdecu';
       this.PrivateKey = '';
       AppComponent.webBroketUrl = 'http://vpn.restomax.com:8080/';
-      let sharedObj = this.winRef.nativeWindow.require('electron').remote.getGlobal('sharedObj');
+      const sharedObj = this.winRef.nativeWindow.require('electron').remote.getGlobal('sharedObj');
       this.IID = sharedObj.iid;
       this.PrivateKey = sharedObj.pk;
       //= 'http://vpn.restomax.com:8080/';
@@ -93,17 +94,17 @@ export class AppComponent {
    *
    * @param message
    */
-  private showMessage(message: XmppRmx.IxmppRmxMessage) {
+  private showMessage(message: rmxIntf.IxmppRmxMessage) {
     this.currentRpt.loaded  = 2;
     this.currentRpt.content = message.data;
-    this.bgURL              = AppComponent.webBroketUrl + 'Image?Image=200&IID=' + this.IID + '&staff=221266';
+    this.bgURL              = `${AppComponent.webBroketUrl}Image?Image=200&IID=${this.IID}&staff=221266`;
   }
   /// ..................................................................................................................
   /**
    *
    * @param message
    */
-  private showErrorMessage(message: XmppRmx.IxmppRmxMessage) {
+  private showErrorMessage(message: rmxIntf.IxmppRmxMessage) {
     this.currentRpt.loaded  = 0;
     this.currentRpt.error   = message.data;
     this.bgURL              = null;
@@ -119,12 +120,6 @@ export class AppComponent {
     this.bgURL              = null;
   }
   /// ..................................................................................................................
-  //private static yyyymmdd = function(d:Date): number{
-  //  var yyyy = d.getFullYear();
-  //  var mm = d.getMonth() < 9 ? (d.getMonth() + 1) : (d.getMonth() + 1);
-  //  var dd  = d.getDate() < 10 ? d.getDate() : d.getDate();
-  //  return yyyy*10000+mm*100+dd;
-  //  }
   private assignHttpRequesParams(params) {
     params.set('view', this.Rpt.name);
     params.set('staff', '221266');
@@ -132,29 +127,28 @@ export class AppComponent {
     params.set('PK',  this.PrivateKey);
     params.set('GUID', '123');
     params.set('fmt', this.Format.name );
-    params.set('D1', this.D1);
-    params.set('D2', this.D2);
-    //params.set('D2', AppComponent.yyyymmdd(this.D2));
+    params.set('D1', rmxUtils.dte2YYYYMMDD(this.D1));
+    params.set('D2', rmxUtils.dte2YYYYMMDD(this.D2));
     }
   /**
    *
    * @returns {string}
    */
   private assignXmppRequesParams(): string {
-    let data = XmppRmxMessageOut.addParam('IID', this.IID);
-    data += XmppRmxMessageOut.addParam('Staff', '221266');
-    data += XmppRmxMessageOut.addParam('PK', this.PrivateKey);
-    data += XmppRmxMessageOut.addParam('Q', '102');
-    data += XmppRmxMessageOut.addParam('Param', this.Rpt.name);
-    data += XmppRmxMessageOut.addParam('Fmt', this.Format.name);
-    data += XmppRmxMessageOut.addParam('D1', this.D1);
-    data += XmppRmxMessageOut.addParam('D2', this.D2);
-    //data += XmppRmxMessageOut.addParam('D2',AppComponent.yyyymmdd(this.D2).toString());
+    let data = rmxMsg.XmppRmxMessageOut.addParam('IID', this.IID);
+    data += rmxMsg.XmppRmxMessageOut.addParam('Staff', '221266');
+    data += rmxMsg.XmppRmxMessageOut.addParam('PK', this.PrivateKey);
+    data += rmxMsg.XmppRmxMessageOut.addParam('Param', this.Rpt.name);
+    data += rmxMsg.XmppRmxMessageOut.addParam('Fmt', this.Format.name);
+    // console.log(this.D1);
+    // console.log(this.D2);
+    data += rmxMsg.XmppRmxMessageOut.addPeriodeParam('D1', this.D1, 'D2', this.D2);
+    // console.log(data);
     return data;
     }
   /// ..................................................................................................................
   /**
-   *
+   * TODO What to do with html response
    * @param res
    * @returns {string|{}}
    */
@@ -163,9 +157,9 @@ export class AppComponent {
     // console.log(body);
     return body || { };
     }
-  
+
   /**
-   *
+   * TODO What to do with html error response
    * @param error
    * @returns {any}
    */
@@ -190,6 +184,13 @@ export class AppComponent {
     this.currentRpt.loaded = 0;
     this.bgURL = null;
   }
+  /**
+   *
+   */
+  public sayHelo() {
+    console.log('Send xmpp Helo Message to MySelf');
+    this.xmpp.sendMsg('', 'HELO', '<P:006.000021><C:HELO><M:' + Date.now().toString() + '>');
+    }
   /// ..................................................................................................................
   /**
    *
@@ -202,11 +203,11 @@ export class AppComponent {
     console.log('Send xmpp Message');
     this.currentRpt.loaded = 1;
     const data = this.assignXmppRequesParams();
-    this.xmpp.sendMsg('ASK_VIEW', data);
+    this.xmpp.sendMsg2Mediator('ASK_VIEW', data);
     }
   /// ..................................................................................................................
   /**
-   *
+   * httpFetchRpt >> httpGetRpt >> Observable extractData|handleError
    * @returns {Observable<R>}
    */
   public httpGetRpt (): Observable<string> {
@@ -219,7 +220,7 @@ export class AppComponent {
   }
   /// ..................................................................................................................
   /**
-   *
+   * httpFetchRpt >> httpGetRpt >> Observable extractData|handleError
    */
   httpFetchRpt( ): void {
     if (this.currentRpt.loaded === 1) {

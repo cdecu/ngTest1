@@ -1,14 +1,15 @@
- import { Subject } from 'rxjs/Subject';
+import { Subject } from 'rxjs/Subject';
 import { Observer } from 'rxjs/Observer';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/interval';
 import 'rxjs/add/operator/takeWhile';
 import 'rxjs/add/operator/distinctUntilChanged';
-import { XmppRmx } from './xmpp-rmx-interfaces';
-import {XmppRmxMessage, XmppRmxMessageOut} from './xmpp-rmx-message';
+import { rmxUtils } from './xmpp-rmx-utils';
+import { rmxMsg } from './xmpp-rmx-message';
+import { rmxIntf } from './xmpp-rmx-interfaces';
 
 /// we inherit from the ordinary Subject
-export class XmppWebsocket extends Subject<XmppRmxMessage> {
+export class XmppWebsocket extends Subject<rmxMsg.XmppRmxMessage> {
 
   public static readonly statusDesc = {
      '-9': 'Error'
@@ -29,16 +30,16 @@ export class XmppWebsocket extends Subject<XmppRmxMessage> {
   private connectionObserver: Observer<number>;
   public connectionStatus: Observable<number>;
 
-  private xmppParam: XmppRmx.IxmppRmxConnectParams = {
-    jid: 'carlos-xe7@vpn.restomax.com',
-    password: 'carlos-xe7',
+  private xmppParam: rmxIntf.IxmppRmxConnectParams = {
+    jid: 'mac_326a44ae5573@vpn.restomax.com', //carlos-xe7
+    password: 'pwd_326a44ae5573',
     resource: 'testX' + Math.random().toString(36).substring(7),
     transport: 'websocket',
     server: 'vpn.restomax.com',
     wsURL: 'ws://vpn.restomax.com:7070/ws/',
     sasl: ['digest-md5', 'plain'],
     };
-  
+
   /// ..................................................................................................................
   constructor() {
     super();
@@ -55,8 +56,9 @@ export class XmppWebsocket extends Subject<XmppRmxMessage> {
    */
   public init(): void {
     // allready started
-    if (this.xmppClient)
+    if (this.xmppClient) {
       return;
+      }
     /// create stanza.io xmppClient and map event to myself
     this.xmppClient = require('stanza.io').createClient(this.xmppParam);
     this.xmppClient.on('connected',  (e, err) => this.SetXmppStatus(1));
@@ -72,7 +74,7 @@ export class XmppWebsocket extends Subject<XmppRmxMessage> {
       this.xmppClient.getRoster();
       this.xmppClient.sendPresence();
       this.SetXmppStatus(2);
-      this.helo();
+      this.helo2Mediator();
     });
     this.xmppClient.on('disconnected',  (e, err) => {
       console.log('disconnected');
@@ -92,7 +94,7 @@ export class XmppWebsocket extends Subject<XmppRmxMessage> {
       // console.log(message);
       const s: string = message.body;
       // console.log(s);
-      const msg = new XmppRmxMessage(s);
+      const msg = new rmxMsg.XmppRmxMessage(s);
       //console.log(msg);
       if (msg.cmd === 'MEDIATOR_OK') {
         this.xmppMediator = message.from;
@@ -101,11 +103,11 @@ export class XmppWebsocket extends Subject<XmppRmxMessage> {
       }
       this.next(msg);
     });
-    
+
     /// we connect
     console.log('XmppWebsocket Created => Connect');
     this.connect();
-    
+
     /// we follow the connection status and run the reconnect while losing the connection
     this.connectionStatus.subscribe( () => {
       if ((!this.reconnectionObservable) && (this.xmppStatus === 0)) {
@@ -153,39 +155,77 @@ export class XmppWebsocket extends Subject<XmppRmxMessage> {
     };
   /// ..................................................................................................................
   /**
-   * send Helo to mediator
+   * send Helo to desti
    */
-  public helo(): void {
+  public helo(desti: string): void {
     console.log('XmppWebsocket:helo', this.xmppStatus);
     try {
-      this.SetXmppStatus(3);
-      const msg = new XmppRmxMessageOut();
-      msg.buildMediatorHelo(this.xmppMediator, this.getMyFullName());
-      //console.log(msg);
-      this.xmppClient.sendMessage(msg);
+        const my = this.getMyFullName();
+        const msg = new rmxMsg.XmppRmxMessageOut();
+        msg.buildCmd(desti || my , 'HELO', my);
+        console.log(msg);
+        this.xmppClient.sendMessage(msg);
     } catch (err) {
-      /// in case of an error with a loss of connection, we restore it
-      console.log('XmppWebsocket:error:' + err);
-      this.SetXmppStatus(-9);
+        /// in case of an error with a loss of connection, we restore it
+        console.log('XmppWebsocket:helo:error:' + err);
     }   };
-  
+
+  /**
+   * send cmd to desti
+   * @param cmd
+   * @param data
+   */
+  public sendMsg(desti: string, cmd: string, data: string): void {
+    console.log('XmppWebsocket:sendMsg', this.xmppStatus);
+    try {
+        const my = this.getMyFullName();
+        const msg = new rmxMsg.XmppRmxMessageOut();
+        msg.buildCmd(this.xmppMediator.full || my , cmd, my);
+        msg.body += '<L:1>';
+        msg.body += data;
+        console.log(msg);
+        this.xmppClient.sendMessage(msg);
+    } catch (err) {
+        /// in case of an error with a loss of connection, we restore it
+        console.log('XmppWebsocket:sendMsg:error:' + err);
+        this.SetXmppStatus(-9);
+    }   };
+
   /**
    * ask wanted view via xmpp message to mediator
    * @param cmd
    * @param data
    */
-  public sendMsg(cmd: string, data: string): void {
-    console.log('XmppWebsocket:sendMsg', this.xmppStatus);
+  public helo2Mediator(): void {
+    console.log('XmppWebsocket:helo2Mediator', this.xmppStatus);
     try {
-      const msg = new XmppRmxMessageOut();
-      msg.buildMediatorCmd(this.xmppMediator, cmd, this.getMyFullName());
-      msg.body += data;
-      //console.log(msg);
-      this.xmppClient.sendMessage(msg);
+        const msg = new rmxMsg.XmppRmxMessageOut();
+        msg.buildMediatorHelo(this.xmppMediator, this.getMyFullName());
+        console.log(msg);
+        this.xmppClient.sendMessage(msg);
     } catch (err) {
-      /// in case of an error with a loss of connection, we restore it
-      console.log('XmppWebsocket:error:' + err);
-      this.SetXmppStatus(-9);
+        /// in case of an error with a loss of connection, we restore it
+        console.log('XmppWebsocket:helo2Mediator:error:' + err);
+        this.SetXmppStatus(-9);
+    }   };
+
+  /**
+   * ask wanted view via xmpp message to mediator
+   * @param cmd
+   * @param data
+   */
+  public sendMsg2Mediator(cmd: string, data: string): void {
+    console.log('XmppWebsocket:sendMsg2Mediator', this.xmppStatus);
+    try {
+        const msg = new rmxMsg.XmppRmxMessageOut();
+        msg.buildMediatorCmd(this.xmppMediator, cmd, this.getMyFullName());
+        msg.body += data;
+        console.log(msg);
+        this.xmppClient.sendMessage(msg);
+    } catch (err) {
+        /// in case of an error with a loss of connection, we restore it
+        console.log('XmppWebsocket:sendMsg2Mediator:error:' + err);
+        this.SetXmppStatus(-9);
     }   };
 
 }

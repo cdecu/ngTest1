@@ -1,5 +1,4 @@
-// ----------------------------------------------------------------------------------------------------------------------
-export namespace XmppRmx {
+export namespace rmxIntf {
   // ..................................................................................................................
   /**
    * IxmppRmxConnectParams
@@ -26,14 +25,14 @@ export namespace XmppRmx {
     parse(rawMessage: string): boolean;
   }
 
-// ..................................................................................................................
-/**
- * IxmppRmxMessageOut
- */
-export interface IxmppRmxMessageOut {
-  to: string;
-  body: string;
-  buildMediatorHelo(Mediator: any, My: string): void;
-  buildMediatorCmd(Mediator: any, Cmd: string, My: string): void;
-  }
+  // ..................................................................................................................
+  /**
+   * IxmppRmxMessageOut
+   */
+  export interface IxmppRmxMessageOut {
+    to: string;
+    body: string;
+    buildMediatorHelo(Mediator: any, My: string): void;
+    buildMediatorCmd(Mediator: any, Cmd: string, My: string): void;
+    }
 }
