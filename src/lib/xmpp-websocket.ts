@@ -31,8 +31,8 @@ export class XmppWebsocket extends Subject<rmxMsg.XmppRmxMessage> {
   public connectionStatus: Observable<number>;
 
   private xmppParam: rmxIntf.IxmppRmxConnectParams = {
-    jid: 'mac_326a44ae5573@vpn.restomax.com', //carlos-xe7
-    password: 'pwd_326a44ae5573',
+    jid: 'carlos-xe7@vpn.restomax.com',
+    password: 'carlos-xe7',
     resource: 'testX' + Math.random().toString(36).substring(7),
     transport: 'websocket',
     server: 'vpn.restomax.com',
