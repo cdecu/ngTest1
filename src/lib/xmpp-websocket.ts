@@ -91,7 +91,7 @@ export class XmppWebsocket extends Subject<rmxMsg.XmppRmxMessage> {
       // console.log(xml);
     });
     this.xmppClient.on('message', (message) => {
-      // console.log(message);
+      console.log(message);
       const s: string = message.body;
       // console.log(s);
       const msg = new rmxMsg.XmppRmxMessage(s);
