@@ -55,7 +55,7 @@ export class XmppWebsocket extends Subject<rmxMsg.XmppRmxMessage> {
    * create and connect
    */
   public init(): void {
-    // allready started
+    // already started
     if (this.xmppClient) {
       return;
       }
