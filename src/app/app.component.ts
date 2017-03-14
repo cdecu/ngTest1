@@ -49,6 +49,37 @@ export class AppComponent {
 
   /// ..................................................................................................................
   /**
+   * TODO What to do with html response
+   * @param res
+   * @returns {string|{}}
+   */
+  private static extractData(res: Response) {
+    const body = res.text();
+    // console.log(body);
+    return body || { };
+  }
+
+  /**
+   * TODO What to do with html error response
+   * @param error
+   * @returns {any}
+   */
+  private static handleError (error: Response | any) {
+    let errMsg: string;
+    // console.error(error);
+    if (error instanceof Response) {
+      const body = error.json() || '';
+      const err = body.error || JSON.stringify(body);
+      errMsg = `Error ${error.status} - ${error.statusText || ''} ${err}`;
+    } else {
+      errMsg = error.message ? error.message : error.toString();
+    }
+    console.error(errMsg);
+    return Observable.throw(errMsg);
+  }
+
+  /// ..................................................................................................................
+  /**
    *
    * @param winRef
    * @param http
@@ -62,12 +93,26 @@ export class AppComponent {
     xmpp.connectionStatus.subscribe((isConnected: number) => {
       // show somewhere . lock gui if isConnected not 4 ?
       console.log(isConnected, XmppWebsocket.statusDesc[isConnected]);
-      });
+      if (isConnected !== 4) {
+        this.showError('Wait XMPP ! ' + isConnected.toString());
+      } else {
+        this.showError('OK');
+        }
+    });
 
     xmpp.subscribe(
-      (message) => { if (message.isValid) {this.showMessage(message); } else {this.showErrorMessage(message); }},
-      (error) => this.showError(error),
-      () => this.showError('xmpp:Closed')
+      (message) => {
+        // console.log('Message',message);
+        if (message.isValid) {this.showMessage(message); } else {this.showErrorMessage(message); }
+        },
+      (error) => {
+        console.log('Error', error);
+        this.showError(error);
+        },
+      () => {
+        console.log('xmpp bye bye');
+        this.showError('xmpp:Closed');
+        }
       );
     }
 
@@ -95,6 +140,7 @@ export class AppComponent {
    * @param message
    */
   private showMessage(message: rmxIntf.IxmppRmxMessage) {
+    console.log('showMessage', message);
     this.currentRpt.loaded  = 2;
     this.currentRpt.content = message.data;
     this.bgURL              = `${AppComponent.webBroketUrl}Image?Image=200&IID=${this.IID}&staff=221266`;
@@ -105,8 +151,9 @@ export class AppComponent {
    * @param message
    */
   private showErrorMessage(message: rmxIntf.IxmppRmxMessage) {
-    this.currentRpt.loaded  = 0;
-    this.currentRpt.error   = message.data;
+    console.log('showErrorMessage', message);
+    this.currentRpt.loaded  = 2;
+    this.currentRpt.content = message.data;
     this.bgURL              = null;
   }
   /// ..................................................................................................................
@@ -114,7 +161,8 @@ export class AppComponent {
    *
    * @param error
    */
-  private showError(error: any) {
+  private showError(error: string) {
+    console.log('showError', error);
     this.currentRpt.loaded  = 0;
     this.currentRpt.error   = error;
     this.bgURL              = null;
@@ -148,36 +196,6 @@ export class AppComponent {
     }
   /// ..................................................................................................................
   /**
-   * TODO What to do with html response
-   * @param res
-   * @returns {string|{}}
-   */
-  private static extractData(res: Response) {
-    const body = res.text();
-    // console.log(body);
-    return body || { };
-    }
-
-  /**
-   * TODO What to do with html error response
-   * @param error
-   * @returns {any}
-   */
-  private static handleError (error: Response | any) {
-    let errMsg: string;
-    // console.error(error);
-    if (error instanceof Response) {
-      const body = error.json() || '';
-      const err = body.error || JSON.stringify(body);
-      errMsg = `Error ${error.status} - ${error.statusText || ''} ${err}`;
-    } else {
-      errMsg = error.message ? error.message : error.toString();
-    }
-    console.error(errMsg);
-    return Observable.throw(errMsg);
-  }
-  /// ..................................................................................................................
-  /**
    *
    */
   public clearRpt() {
@@ -208,7 +226,7 @@ export class AppComponent {
   /// ..................................................................................................................
   /**
    * httpFetchRpt >> httpGetRpt >> Observable extractData|handleError
-   * @returns {Observable<R>}
+   * @returns {Observable<string>}
    */
   public httpGetRpt (): Observable<string> {
     const rptUrl: string = AppComponent.webBroketUrl + 'view';
