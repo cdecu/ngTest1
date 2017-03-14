@@ -16,7 +16,7 @@ const reconnectionObservable = Observable.interval(2000)
 
 
 log('subscribe');
-Subscription = reconnectionObservable.subscribe(
+const s : Subscription = reconnectionObservable.subscribe(
   () => log('tick'),
   (error) => log(error),
   () => log('byebye')
