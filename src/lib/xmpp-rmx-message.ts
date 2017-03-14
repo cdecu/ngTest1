@@ -46,22 +46,24 @@ export namespace rmxMsg {
       this.params    = {};
       this.rawparams = {};
 
-      this.dataFmt = null;
-      this.data    = null;
+      this.dataFmt   = null;
+      this.data      = null;
 
-      this.isValid = false;
+      this.isValid   = false;
 
       if (!rawMessage || 0 === rawMessage.length) {
         this.data = 'Empty Msg';
         return false;
       }
 
+      let MsgDataFmt = null;
+      let MsgData    = null;
       let match = XmppRmxMessage.reXMLData.exec(rawMessage);
       if (match) {
-        this.dataFmt = rawMessage.substr(match.index + 2, match[0].length - 3);
-        this.data    = rawMessage.substr(match.index + match[0].length);
+        MsgDataFmt   = rawMessage.substr(match.index + 2, match[0].length - 3);
+        MsgData      = rawMessage.substr(match.index + match[0].length);
         rawMessage   = rawMessage.substr(0, match.index);
-      }
+        }
 
       // To use RegEx group[2] (<)(data)(>)
       if (match = XmppRmxMessage.reSplit.exec(rawMessage)) {
@@ -102,17 +104,16 @@ export namespace rmxMsg {
 
       if (this.cmd === 'ERROR') {
         //console.log(this.params)
-        this.data    = this.data || 'Error : ' + this.params['M'] + ' Code : ' + this.params['E'];
-        this.dataFmt = 'TXT';
-        this.isValid = false;
-        return this.isValid;
+        this.data    = MsgData || 'Error : ' + this.params['M'] + ' Code : ' + this.params['E'];
+        this.dataFmt = MsgDataFmt || 'TXT';
+        return false;
         }
 
-      if (!this.data) {
+      if (!MsgData) {
         this.data    = rawMessage + ' Received:' + Date.now().toString();
         this.dataFmt = 'TXT';
         this.isValid = false;
-        return this.isValid;
+        return false;
         }
 
       this.isValid = true;
