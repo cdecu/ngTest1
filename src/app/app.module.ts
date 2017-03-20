@@ -7,8 +7,8 @@ import {AppComponent} from './app.component';
 import {RouterModule} from '@angular/router';
 import {MaterialModule, MaterialRootModule} from '@angular/material';
 import { DatepickerModule } from 'angular2-material-datepicker';
-import {XmppWebsocket} from '../lib/xmpp-websocket';
-import { WindowRef } from '../lib/windowRef';
+import {XmppWebsocket} from 'rmx.xmpp.utils/src/xmpp-websocket';
+import { WindowRef } from './windowRef';
 
 @NgModule({
   declarations: [

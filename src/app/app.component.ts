@@ -4,11 +4,11 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/throw';
-import {WindowRef} from '../lib/windowRef';
-import {XmppWebsocket} from '../lib/xmpp-websocket';
-import { rmxUtils } from '../lib/xmpp-rmx-utils';
-import { rmxMsg } from '../lib/xmpp-rmx-message';
-import { rmxIntf } from '../lib/xmpp-rmx-interfaces';
+import {WindowRef} from './windowRef';
+import {XmppWebsocket} from 'rmx.xmpp.utils/src/xmpp-websocket';
+import {rmxUtils} from 'rmx.xmpp.utils/src/xmpp-rmx-utils';
+import {rmxMsg} from 'rmx.xmpp.utils/src/xmpp-rmx-message';
+import {rmxIntf} from 'rmx.xmpp.utils/src/xmpp-rmx-interfaces';
 
 ///   ..................................................................................................................
 ///   ..................................................................................................................
