@@ -1,18 +1,6 @@
 md-sidenav-layout {
   background: #a3d4f9;
 }
-md-sidenav-layout.m2app-dark {
-  background: black;
-}
-.example-card {
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-  text-align: center;
-  color: #f8f8f2;
-  padding-top: 30px;
-  text-shadow: 1px 1px #030303;
-  min-height: 20pc;
-  }
 .app-content {
   padding: 20px;
 }
@@ -22,21 +10,10 @@ md-sidenav-layout.m2app-dark {
   bottom: 20px;
   right: 20px;
 }
-.app-spinner {
-  height: 100px;
-  width: 100px;
-  display: inline-block;
-}
+
 .app-content md-card {
   background: #f4f9f2;
   margin: 20px;
-}
-.app-toolbar-filler {
-  flex: 1 1 auto;
-}
-
-.params-input-section {
-  flex: 1 1 auto;
 }
 
 

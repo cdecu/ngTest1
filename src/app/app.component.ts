@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef, ChangeDetectionStrategy} from '@angular/core';
 import { Http, URLSearchParams, Response } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/catch';
@@ -16,16 +16,16 @@ import {rmxIntf} from 'rmx.xmpp.utils/src/xmpp-rmx-interfaces';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrls: ['./app.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent {
 
   public static webBroketUrl: string;
-  public isDarkTheme = false;
   public IID: string;
   public PrivateKey: string;
-  public D1: Date = null;
-  public D2: Date = null;
+  public D1: Date;
+  public D2: Date;
 
   public Rpts = [
     {name: '010', descr: 'ModePays'},
@@ -44,39 +44,11 @@ export class AppComponent {
     ];
   public Format = {name: 'TEXT', descr: 'Text'};
 
-  public currentRpt = {loaded: 0, name: 'Test', params: 'NoParams', error: 'Not Loaded', content: 'NoContent'};
-  public bgURL: string = null;
-
-  /// ..................................................................................................................
-  /**
-   * TODO What to do with html response
-   * @param res
-   * @returns {string|{}}
-   */
-  private static extractData(res: Response) {
-    const body = res.text();
-    // console.log(body);
-    return body || { };
-  }
-
-  /**
-   * TODO What to do with html error response
-   * @param error
-   * @returns {any}
-   */
-  private static handleError (error: Response | any) {
-    let errMsg: string;
-    // console.error(error);
-    if (error instanceof Response) {
-      const body = error.json() || '';
-      const err = body.error || JSON.stringify(body);
-      errMsg = `Error ${error.status} - ${error.statusText || ''} ${err}`;
-    } else {
-      errMsg = error.message ? error.message : error.toString();
-    }
-    console.error(errMsg);
-    return Observable.throw(errMsg);
-  }
+  public status : number = 0;
+  public statusMsg  ='Loading ...';
+  public answerMsg : rmxIntf.IxmppRmxMessageIn;
+  public answerError : string = 'Loading ...';
+  public bgURL?: string;
 
   /// ..................................................................................................................
   /**
@@ -86,10 +58,18 @@ export class AppComponent {
    * @param xmpp
    * @returns {any}
    */
-  constructor(private winRef: WindowRef, private http: Http, private xmpp: XmppWebsocket) {
+  constructor(private cd: ChangeDetectorRef, private winRef: WindowRef, private http: Http, private xmpp: XmppWebsocket) {
     console.log('App Create');
     this.loadArgs();
-    this.xmpp.init();
+    this.xmpp.init({
+      jid: 'carlos-xe7@vpn.restomax.com',
+      password: 'carlos-xe7',
+      resource: 'testX' + Math.random().toString(36).substring(7),
+      transport: 'websocket',
+      server: 'vpn.restomax.com',
+      wsURL: 'ws://vpn.restomax.com:7070/ws/',
+      sasl: ['digest-md5', 'plain'],
+      });
     xmpp.connectionStatus.subscribe((isConnected: number) => {
       // show somewhere . lock gui if isConnected not 4 ?
       console.log(isConnected, XmppWebsocket.statusDesc[isConnected]);
@@ -128,9 +108,6 @@ export class AppComponent {
       const sharedObj = this.winRef.nativeWindow.require('electron').remote.getGlobal('sharedObj');
       this.IID = sharedObj.iid;
       this.PrivateKey = sharedObj.pk;
-      //= 'http://vpn.restomax.com:8080/';
-      // const rptUrl = 'http://localhost:8080/view';
-      // const rptUrl = 'http://10.0.0.69:8080/view';
   } catch (err) {
       // just ignore
   }   }
@@ -139,23 +116,44 @@ export class AppComponent {
    *
    * @param message
    */
-  private showMessage(message: rmxIntf.IxmppRmxMessage) {
-    console.log('showMessage', message);
-    this.currentRpt.loaded  = 2;
-    this.currentRpt.content = message.data;
-    this.bgURL              = `${AppComponent.webBroketUrl}Image?Image=200&IID=${this.IID}&staff=221266`;
+  private showWait(message: string) {
+    console.log('showWait', message);
+    this.status      = 1;
+    this.statusMsg   = message;
+    this.answerError = undefined;
+    this.answerMsg   = undefined;
+    this.bgURL       = undefined;
+    this.cd.markForCheck();
   }
   /// ..................................................................................................................
   /**
    *
    * @param message
    */
-  private showErrorMessage(message: rmxIntf.IxmppRmxMessage) {
+  private showMessage(message: rmxIntf.IxmppRmxMessageIn) {
+    console.log('showMessage', message);
+    this.status      = 2;
+    this.statusMsg   ='Answered';
+    this.answerError = undefined;
+    this.answerMsg   = message;
+    this.bgURL       = `${AppComponent.webBroketUrl}Image?Image=200&IID=${this.IID}&staff=221266`;
+    console.log(`${AppComponent.webBroketUrl}Image?Image=200&IID=${this.IID}&staff=221266`);
+    this.cd.markForCheck();
+    }
+  /// ..................................................................................................................
+  /**
+   *
+   * @param message
+   */
+  private showErrorMessage(message: rmxIntf.IxmppRmxMessageIn) {
     console.log('showErrorMessage', message);
-    this.currentRpt.loaded  = 2;
-    this.currentRpt.content = message.data;
-    this.bgURL              = null;
-  }
+    this.status      = 0;
+    this.statusMsg   ='Error';
+    this.answerError = message.data || 'No Answer';
+    this.answerMsg   = undefined;
+    this.bgURL       = undefined;
+    this.cd.markForCheck();
+    }
   /// ..................................................................................................................
   /**
    *
@@ -163,10 +161,26 @@ export class AppComponent {
    */
   private showError(error: string) {
     console.log('showError', error);
-    this.currentRpt.loaded  = 0;
-    this.currentRpt.error   = error;
-    this.bgURL              = null;
-  }
+    this.status      = 0;
+    this.statusMsg   ='Error';
+    this.answerError = error;
+    this.answerMsg   = undefined;
+    this.bgURL       = undefined;
+    this.cd.markForCheck();
+    }
+  /// ..................................................................................................................
+  /**
+   *
+   */
+  public clearRpt() {
+    console.log('clearRpt');
+    this.status      = 0;
+    this.statusMsg   ='Not Loaded';
+    this.answerError ='Not Loaded';
+    this.answerMsg   = undefined;
+    this.bgURL       = undefined;
+    this.cd.markForCheck();
+    }
   /// ..................................................................................................................
   private assignHttpRequesParams(params) {
     params.set('view', this.Rpt.name);
@@ -198,66 +212,85 @@ export class AppComponent {
   /**
    *
    */
-  public clearRpt() {
-    this.currentRpt.loaded = 0;
-    this.bgURL = null;
-  }
-  /**
-   *
-   */
   public sayHelo() {
-    console.log('Send xmpp Helo Message to MySelf');
-    this.xmpp.sendMsg('', 'HELO', '<P:006.000021><C:HELO><M:' + Date.now().toString() + '>');
+    this.showWait('Send xmpp Helo Message to MySelf !');
+    this.xmpp.sendMsg('', 'HELO', '<P:005.000521><C:HELO><M:' + Date.now().toString() + '>');
     }
   /// ..................................................................................................................
   /**
    *
    */
   public xmppGetRpt(): void {
-    if (this.currentRpt.loaded === 1) {
+    if (this.status === 1) {
       console.log('Please wait');
       return;
       }
     console.log('Send xmpp Message');
-    this.currentRpt.loaded = 1;
     const data = this.assignXmppRequesParams();
     this.xmpp.sendMsg2Mediator('ASK_VIEW', data);
+    this.showWait('Wait Rpt '+this.Rpt.name);
+    }
+  /// ..................................................................................................................
+  /**
+   * httpFetchRpt >> httpGetRpt >> Observable extractData|handleError
+   */
+  httpFetchRpt( ): void {
+    if (this.status === 1) {
+      console.log('Please wait');
+      return;
+      }
+    this.httpGetRpt().subscribe(
+        Rpt => this.showMessage(Rpt),
+        error => this.showError(error)
+        );
+    this.showWait('Wait Rpt '+this.Rpt.name);
     }
   /// ..................................................................................................................
   /**
    * httpFetchRpt >> httpGetRpt >> Observable extractData|handleError
    * @returns {Observable<string>}
    */
-  public httpGetRpt (): Observable<string> {
+  public httpGetRpt (): Observable<rmxIntf.IxmppRmxMessageIn> {
     const rptUrl: string = AppComponent.webBroketUrl + 'view';
     const params = new URLSearchParams();
     this.assignHttpRequesParams(params);
-    return this.http.get(rptUrl, {search: params} )
+    return this.http.get(rptUrl, {search: params})
       .map(AppComponent.extractData)
       .catch(AppComponent.handleError);
-  }
+    }
   /// ..................................................................................................................
   /**
-   * httpFetchRpt >> httpGetRpt >> Observable extractData|handleError
+   * TODO What to do with html response
+   * @param res
+   * @returns {string|{}}
    */
-  httpFetchRpt( ): void {
-    if (this.currentRpt.loaded === 1) {
-      console.log('Please wait');
-      return;
+  private static extractData(res: Response) : rmxIntf.IxmppRmxMessageIn {
+    // console.log(res);
+    const body = res.text();
+    let msg = new rmxMsg.XmppRmxMessageIn('');
+    // get Fmt from Response Headers !
+    msg.dataFmt = 'XML';
+    msg.data = body;
+    return msg;
+  }
+
+  /**
+   * TODO What to do with html error response
+   * @param error
+   * @returns {any}
+   */
+  private static handleError (error: Response | any) {
+    let errMsg: string;
+    console.error(error);
+    if (error instanceof Response) {
+      const body = error.json() || '';
+      const err = body.error || JSON.stringify(body);
+      errMsg = `Error ${error.status} - ${error.statusText || ''} ${err}`;
     } else {
-      this.currentRpt.loaded = 1;
-      this.httpGetRpt()
-        .subscribe(
-          Rpt => {
-            this.currentRpt.content = Rpt;
-            this.currentRpt.loaded = 2;
-            this.bgURL = AppComponent.webBroketUrl + 'Image?Image=200&IID=' + this.IID + '&staff=221266';
-          },
-          error => {
-            this.currentRpt.error = <any>error;
-            this.currentRpt.loaded = 0;
-          }
-        );
-    } }
+      errMsg = error.message ? error.message : error.toString();
+      }
+    console.error(errMsg);
+    return Observable.throw(errMsg);
+  }
 
 }

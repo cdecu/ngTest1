@@ -9,10 +9,16 @@ import {MaterialModule, MaterialRootModule} from '@angular/material';
 import { DatepickerModule } from 'angular2-material-datepicker';
 import {XmppWebsocket} from 'rmx.xmpp.utils/src/xmpp-websocket';
 import { WindowRef } from './windowRef';
+import { AnswerWaitComponent } from './answer-wait/answer-wait.component';
+import { AnswerErrorComponent } from './answer-error/answer-error.component';
+import { AnswerComponent } from './answer/answer.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    AnswerWaitComponent,
+    AnswerErrorComponent,
+    AnswerComponent
 ],
   imports: [
     BrowserModule,

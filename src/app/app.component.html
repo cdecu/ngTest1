@@ -1,22 +1,28 @@
 <md-sidenav-container [class.m2app-dark]="isDarkTheme">
 
   <md-toolbar color="primary">
-    <span class="app-toolbar-filler"></span>
-    <button md-button (click)="isDarkTheme = !isDarkTheme">TOGGLE DARK THEME</button>
   </md-toolbar>
 
   <div class="app-content">
+
     <md-card class="app-input-section">
-      <mat-input-container>
+      <material-datepicker [(date)]="D1">D1</material-datepicker>
+      <material-datepicker [(date)]="D2">D2</material-datepicker>
+      <!--<input mdInput type="date" [(ngModel)]="D1">-->
+      <!--<md-placeholder><i class="material-icons app-input-icon">date_range</i> D1</md-placeholder>-->
+      <!--</input>-->
+      <!--<input mdInput type="date" [(ngModel)]="D2">-->
+      <!--<md-placeholder><i class="material-icons app-input-icon">date_range</i> D2</md-placeholder>-->
+      <!--</input>-->
+      <br>
+      <br>
+      <md-input-container>
         <input mdInput [(ngModel)]="IID" required maxlength="20">
         <md-placeholder><i class="material-icons app-input-icon">android</i> IID</md-placeholder>
-      </mat-input-container>
+      </md-input-container>
       <md-input-container>
       <input mdInput [(ngModel)]="PrivateKey"  placeholder="PrivateKey" maxlength="20">
       </md-input-container>
-    <!--</md-card>-->
-
-    <!--<md-card class="app-input-section">-->
       <md-select [(ngModel)]="Rpt.name" placeholder="Report" >
         <md-option *ngFor="let rpt of Rpts" [value]="rpt.name">{{ rpt.descr }}</md-option>
       </md-select>
@@ -30,25 +36,15 @@
         <button md-button (click)="httpFetchRpt()">WebBroker [{{Rpt.name}}]</button>
         <button md-button (click)="xmppGetRpt()">XMPP [{{Rpt.name}}]</button>
         <button md-button (click)="clearRpt()">Clear</button>
-        <!--<input mdInput type="date" [(ngModel)]="D1">-->
-          <!--<md-placeholder><i class="material-icons app-input-icon">date_range</i> D1</md-placeholder>-->
-        <!--</input>-->
-        <!--<input mdInput type="date" [(ngModel)]="D2">-->
-          <!--<md-placeholder><i class="material-icons app-input-icon">date_range</i> D2</md-placeholder>-->
-        <!--</input>-->
-        <material-datepicker [(date)]="D1">D1</material-datepicker>
-        <material-datepicker [(date)]="D2">D2</material-datepicker>
+        <button md-button (click)="sayHelo()">Helo</button>
       </md-card-actions>
 
-      <md-card-content class="example-card" *ngIf="currentRpt.loaded==0">
-        <h1>{{currentRpt.error}}</h1>
-      </md-card-content>
-      <md-card-content class="example-card" *ngIf="currentRpt.loaded==1" [style.background-image]="'url(' + bgURL + ')'">
-        <md-spinner class="app-spinner"></md-spinner>
-      </md-card-content>
-      <md-card-content class="example-card" *ngIf="currentRpt.loaded==2" [style.background-image]="'url(' + bgURL + ')'">
-        <pre>{{currentRpt.content}}</pre>
-      </md-card-content>
+      <div [ngSwitch]="status">
+        <app-answer *ngSwitchCase="2" [answerMsg]="answerMsg"  [bgURL]="bgURL"></app-answer>
+        <app-answer-wait *ngSwitchCase="1" [statusMsg]="statusMsg">></app-answer-wait>
+        <app-answer-error *ngSwitchDefault [answerError]="answerError"></app-answer-error>
+      </div>
+
       <md-card-actions>
         <button md-button (click)="httpFetchRpt()">WebBroker [{{Rpt.name}}]</button>
         <button md-button (click)="xmppGetRpt()">XMPP [{{Rpt.name}}]</button>
@@ -59,8 +55,3 @@
   </div>
 
 </md-sidenav-container>
-
-<span class="app-action" [class.m2app-dark]="isDarkTheme">
-  <button md-fab><md-icon>check circle</md-icon></button>
-</span>
-

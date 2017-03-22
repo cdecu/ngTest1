@@ -1,0 +1,7 @@
+<md-card-content class="app-answer" [style.background-image]="'url(' + bgURL + ')'">
+  <div [ngSwitch]="answerMsg.dataFmt">
+    <div *ngSwitchCase="'XML'">{{answerMsg.data}}</div>
+    <div *ngSwitchCase="'JSON'">{{answerMsg.data}}</div>
+    <div *ngSwitchDefault><pre>{{answerMsg.data}}</pre></div>
+  </div>
+</md-card-content>
