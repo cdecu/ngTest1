@@ -1,5 +1,6 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import {rmxMsg} from 'rmx.xmpp.utils/src/xmpp-rmx-message';
+import {AppComponent} from '../app.component';
 
 @Component({
   selector: 'app-answer',
@@ -8,10 +9,7 @@ import {rmxMsg} from 'rmx.xmpp.utils/src/xmpp-rmx-message';
 })
 export class AnswerComponent implements OnInit {
 
-  @Input() answerMsg : rmxMsg.XmppRmxMessageIn;
-  @Input() bgURL?: string;
-
-  constructor() { }
+  constructor(private parent: AppComponent) { }
 
   ngOnInit() {
   }

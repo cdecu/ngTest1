@@ -1,4 +1,5 @@
-import { Component, OnInit, Input } from '@angular/core';
+import {Component, OnInit } from '@angular/core';
+import {AppComponent} from '../app.component';
 
 @Component({
   selector: 'app-answer-wait',
@@ -7,9 +8,7 @@ import { Component, OnInit, Input } from '@angular/core';
 })
 export class AnswerWaitComponent implements OnInit {
 
-  @Input() statusMsg : string;
-
-  constructor() { }
+  constructor(private parent: AppComponent) { }
 
   ngOnInit() {
   }

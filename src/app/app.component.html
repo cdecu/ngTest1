@@ -1,19 +1,8 @@
-<md-sidenav-container [class.m2app-dark]="isDarkTheme">
-
-  <md-toolbar color="primary">
-  </md-toolbar>
-
-  <div class="app-content">
+<div class="app-content">
 
     <md-card class="app-input-section">
       <material-datepicker [(date)]="D1">D1</material-datepicker>
       <material-datepicker [(date)]="D2">D2</material-datepicker>
-      <!--<input mdInput type="date" [(ngModel)]="D1">-->
-      <!--<md-placeholder><i class="material-icons app-input-icon">date_range</i> D1</md-placeholder>-->
-      <!--</input>-->
-      <!--<input mdInput type="date" [(ngModel)]="D2">-->
-      <!--<md-placeholder><i class="material-icons app-input-icon">date_range</i> D2</md-placeholder>-->
-      <!--</input>-->
       <br>
       <br>
       <md-input-container>
@@ -21,37 +10,27 @@
         <md-placeholder><i class="material-icons app-input-icon">android</i> IID</md-placeholder>
       </md-input-container>
       <md-input-container>
-      <input mdInput [(ngModel)]="PrivateKey"  placeholder="PrivateKey" maxlength="20">
+        <input mdInput [(ngModel)]="PrivateKey"  placeholder="PrivateKey" maxlength="20">
       </md-input-container>
       <md-select [(ngModel)]="Rpt.name" placeholder="Report" >
-        <md-option *ngFor="let rpt of Rpts" [value]="rpt.name">{{ rpt.descr }}</md-option>
+        <md-option *ngFor="let rpt of app.Rpts" [value]="rpt.name">{{ rpt.descr }}</md-option>
       </md-select>
       <md-select [(ngModel)]="Format.name" placeholder="Export Format" >
-        <md-option *ngFor="let fmt of Formats" [value]="fmt.name">{{ fmt.descr }}</md-option>
+        <md-option *ngFor="let fmt of app.Formats" [value]="fmt.name">{{ fmt.descr }}</md-option>
       </md-select>
     </md-card>
 
-    <md-card>
-      <md-card-actions>
+    <div class="app-answer" [ngSwitch]="status" [style.background-image]="'url(' + bgURL + ')'">
+        <app-answer *ngSwitchCase="2"></app-answer>
+        <app-answer-wait *ngSwitchCase="1">></app-answer-wait>
+        <app-answer-error *ngSwitchDefault></app-answer-error>
+     </div>
+
+    <div class="app-statusbar" align="bottom">
         <button md-button (click)="httpFetchRpt()">WebBroker [{{Rpt.name}}]</button>
         <button md-button (click)="xmppGetRpt()">XMPP [{{Rpt.name}}]</button>
         <button md-button (click)="clearRpt()">Clear</button>
         <button md-button (click)="sayHelo()">Helo</button>
-      </md-card-actions>
+    </div>
 
-      <div [ngSwitch]="status">
-        <app-answer *ngSwitchCase="2" [answerMsg]="answerMsg"  [bgURL]="bgURL"></app-answer>
-        <app-answer-wait *ngSwitchCase="1" [statusMsg]="statusMsg">></app-answer-wait>
-        <app-answer-error *ngSwitchDefault [answerError]="answerError"></app-answer-error>
-      </div>
-
-      <md-card-actions>
-        <button md-button (click)="httpFetchRpt()">WebBroker [{{Rpt.name}}]</button>
-        <button md-button (click)="xmppGetRpt()">XMPP [{{Rpt.name}}]</button>
-        <button md-button (click)="clearRpt()">Clear</button>
-        <button md-button (click)="sayHelo()">Helo</button>
-      </md-card-actions>
-    </md-card>
-  </div>
-
-</md-sidenav-container>
+</div>

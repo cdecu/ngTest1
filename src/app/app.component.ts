@@ -4,11 +4,12 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/throw';
-import {WindowRef} from './windowRef';
 import {XmppWebsocket} from 'rmx.xmpp.utils/src/xmpp-websocket';
 import {rmxUtils} from 'rmx.xmpp.utils/src/xmpp-rmx-utils';
 import {rmxMsg} from 'rmx.xmpp.utils/src/xmpp-rmx-message';
 import {rmxIntf} from 'rmx.xmpp.utils/src/xmpp-rmx-interfaces';
+import {WindowRef} from './windowRef';
+import {AppService} from './app.service';
 
 ///   ..................................................................................................................
 ///   ..................................................................................................................
@@ -16,49 +17,37 @@ import {rmxIntf} from 'rmx.xmpp.utils/src/xmpp-rmx-interfaces';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css'],
+  styleUrls: ['./app.component.sass'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent {
 
-  public static webBroketUrl: string;
-  public IID: string;
-  public PrivateKey: string;
-  public D1: Date;
+  public static webBroketUrl = 'http://vpn.restomax.com:8080/';
+  public IID = 'cdecu';
+  public PrivateKey = '';
+  public D1: Date = new Date();
   public D2: Date;
 
-  public Rpts = [
-    {name: '010', descr: 'ModePays'},
-    {name: '011', descr: 'Jours'},
-    {name: '012', descr: 'Days'},
-    {name: '013', descr: '013'},
-    {name: '014', descr: '014'},
-    {name: '041', descr: '041'},
-    {name: 'Cloture', descr: 'Cloture'},
-    ];
   public Rpt = {name: '010', descr: 'ModePays'};
-  public Formats = [
-    {name: 'TEXT', descr: 'Text'},
-    {name: 'XML', descr: 'Xml'},
-    {name: 'JSON', descr: 'Json'},
-    ];
   public Format = {name: 'TEXT', descr: 'Text'};
 
-  public status : number = 0;
-  public statusMsg  ='Loading ...';
+  public status = 0;
+  public statusMsg = 'Loading ...';
   public answerMsg : rmxIntf.IxmppRmxMessageIn;
-  public answerError : string = 'Loading ...';
+  public answerError = 'Loading ...';
   public bgURL?: string;
 
   /// ..................................................................................................................
   /**
    *
+   * @param app
+   * @param cd
    * @param winRef
    * @param http
    * @param xmpp
    * @returns {any}
    */
-  constructor(private cd: ChangeDetectorRef, private winRef: WindowRef, private http: Http, private xmpp: XmppWebsocket) {
+  constructor(private app: AppService, private cd: ChangeDetectorRef, private winRef: WindowRef, private http: Http, private xmpp: XmppWebsocket) {
     console.log('App Create');
     this.loadArgs();
     this.xmpp.init({
@@ -102,12 +91,10 @@ export class AppComponent {
    */
   private loadArgs() {
   try {
-      this.IID = 'cdecu';
-      this.PrivateKey = '';
-      AppComponent.webBroketUrl = 'http://vpn.restomax.com:8080/';
       const sharedObj = this.winRef.nativeWindow.require('electron').remote.getGlobal('sharedObj');
-      this.IID = sharedObj.iid;
-      this.PrivateKey = sharedObj.pk;
+      AppComponent.webBroketUrl = sharedObj.webBroketUrl || AppComponent.webBroketUrl;
+      this.IID        = sharedObj.iid || this.IID;
+      this.PrivateKey = sharedObj.pk  || this.PrivateKey;
   } catch (err) {
       // just ignore
   }   }
@@ -122,7 +109,6 @@ export class AppComponent {
     this.statusMsg   = message;
     this.answerError = undefined;
     this.answerMsg   = undefined;
-    this.bgURL       = undefined;
     this.cd.markForCheck();
   }
   /// ..................................................................................................................
@@ -133,7 +119,7 @@ export class AppComponent {
   private showMessage(message: rmxIntf.IxmppRmxMessageIn) {
     console.log('showMessage', message);
     this.status      = 2;
-    this.statusMsg   ='Answered';
+    this.statusMsg   = 'Answered';
     this.answerError = undefined;
     this.answerMsg   = message;
     this.bgURL       = `${AppComponent.webBroketUrl}Image?Image=200&IID=${this.IID}&staff=221266`;
@@ -148,10 +134,10 @@ export class AppComponent {
   private showErrorMessage(message: rmxIntf.IxmppRmxMessageIn) {
     console.log('showErrorMessage', message);
     this.status      = 0;
-    this.statusMsg   ='Error';
+    this.statusMsg   = 'Error';
     this.answerError = message.data || 'No Answer';
     this.answerMsg   = undefined;
-    this.bgURL       = undefined;
+    this.bgURL       = `${AppComponent.webBroketUrl}Image?Image=200&IID=${this.IID}&staff=221266`;
     this.cd.markForCheck();
     }
   /// ..................................................................................................................
@@ -162,7 +148,7 @@ export class AppComponent {
   private showError(error: string) {
     console.log('showError', error);
     this.status      = 0;
-    this.statusMsg   ='Error';
+    this.statusMsg   = 'Error';
     this.answerError = error;
     this.answerMsg   = undefined;
     this.bgURL       = undefined;
@@ -175,8 +161,8 @@ export class AppComponent {
   public clearRpt() {
     console.log('clearRpt');
     this.status      = 0;
-    this.statusMsg   ='Not Loaded';
-    this.answerError ='Not Loaded';
+    this.statusMsg   = 'Not Loaded';
+    this.answerError = 'Not Loaded';
     this.answerMsg   = undefined;
     this.bgURL       = undefined;
     this.cd.markForCheck();
@@ -228,7 +214,7 @@ export class AppComponent {
     console.log('Send xmpp Message');
     const data = this.assignXmppRequesParams();
     this.xmpp.sendMsg2Mediator('ASK_VIEW', data);
-    this.showWait('Wait Rpt '+this.Rpt.name);
+    this.showWait('Wait Rpt ' + this.Rpt.name);
     }
   /// ..................................................................................................................
   /**
@@ -243,7 +229,7 @@ export class AppComponent {
         Rpt => this.showMessage(Rpt),
         error => this.showError(error)
         );
-    this.showWait('Wait Rpt '+this.Rpt.name);
+    this.showWait('Wait Rpt ' + this.Rpt.name);
     }
   /// ..................................................................................................................
   /**
@@ -267,7 +253,7 @@ export class AppComponent {
   private static extractData(res: Response) : rmxIntf.IxmppRmxMessageIn {
     // console.log(res);
     const body = res.text();
-    let msg = new rmxMsg.XmppRmxMessageIn('');
+    const msg = new rmxMsg.XmppRmxMessageIn('');
     // get Fmt from Response Headers !
     msg.dataFmt = 'XML';
     msg.data = body;

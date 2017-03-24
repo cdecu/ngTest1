@@ -1,5 +1,5 @@
-import { Component, OnInit, Input } from '@angular/core';
-import {rmxIntf} from 'rmx.xmpp.utils/src/xmpp-rmx-interfaces';
+import { Component, OnInit } from '@angular/core';
+import {AppComponent} from '../app.component';
 
 @Component({
   selector: 'app-answer-error',
@@ -8,9 +8,7 @@ import {rmxIntf} from 'rmx.xmpp.utils/src/xmpp-rmx-interfaces';
 })
 export class AnswerErrorComponent implements OnInit {
 
-  @Input() answerError : string;
-
-  constructor() { }
+  constructor(private parent: AppComponent) { }
 
   ngOnInit() {
   }
