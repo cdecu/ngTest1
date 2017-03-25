@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef, ChangeDetectionStrategy} from '@angular/core';
+import {Component, ChangeDetectorRef, ChangeDetectionStrategy, OnInit} from '@angular/core';
 import { Http, URLSearchParams, Response } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/catch';
@@ -20,9 +20,18 @@ import {AppService} from './app.service';
   styleUrls: ['./app.component.sass'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
 
   public static webBroketUrl = 'http://vpn.restomax.com:8080/';
+  public static xmppParams = {
+    jid: 'carlos-xe7@vpn.restomax.com',
+    password: 'carlos-xe7',
+    resource: 'testX' + Math.random().toString(36).substring(7),
+    transport: 'websocket',
+    server: 'vpn.restomax.com',
+    wsURL: 'ws://vpn.restomax.com:7070/ws/',
+    sasl: ['digest-md5', 'plain'],
+    };
   public IID = 'cdecu';
   public PrivateKey = '';
   public D1: Date = new Date();
@@ -50,16 +59,25 @@ export class AppComponent {
   constructor(private app: AppService, private cd: ChangeDetectorRef, private winRef: WindowRef, private http: Http, private xmpp: XmppWebsocket) {
     console.log('App Create');
     this.loadArgs();
-    this.xmpp.init({
-      jid: 'carlos-xe7@vpn.restomax.com',
-      password: 'carlos-xe7',
-      resource: 'testX' + Math.random().toString(36).substring(7),
-      transport: 'websocket',
-      server: 'vpn.restomax.com',
-      wsURL: 'ws://vpn.restomax.com:7070/ws/',
-      sasl: ['digest-md5', 'plain'],
-      });
-    xmpp.connectionStatus.subscribe((isConnected: number) => {
+    }
+  /// ..................................................................................................................
+  /**
+   * Load command line args prepared in electron main
+   */
+  private loadArgs() {
+    try {
+      const sharedObj = this.winRef.nativeWindow.require('electron').remote.getGlobal('sharedObj');
+      AppComponent.webBroketUrl = sharedObj.webBroketUrl || AppComponent.webBroketUrl;
+      this.IID        = sharedObj.iid || this.IID;
+      this.PrivateKey = sharedObj.pk  || this.PrivateKey;
+    } catch (err) {
+      // just ignore
+    }   }
+  /// ..................................................................................................................
+  ngOnInit(): void {
+    this.xmpp.init(AppComponent.xmppParams);
+
+    this.xmpp.connectionStatus.subscribe((isConnected: number) => {
       // show somewhere . lock gui if isConnected not 4 ?
       console.log(isConnected, XmppWebsocket.statusDesc[isConnected]);
       if (isConnected !== 4) {
@@ -67,17 +85,17 @@ export class AppComponent {
       } else {
         this.showError('OK');
         }
-    });
+      });
 
-    xmpp.subscribe(
+    this.xmpp.subscribe(
       (message) => {
         // console.log('Message',message);
         if (message.isValid) {this.showMessage(message); } else {this.showErrorMessage(message); }
-        },
+      },
       (error) => {
         console.log('Error', error);
         this.showError(error);
-        },
+      },
       () => {
         console.log('xmpp bye bye');
         this.showError('xmpp:Closed');
@@ -85,19 +103,6 @@ export class AppComponent {
       );
     }
 
-  /// ..................................................................................................................
-  /**
-   * Load command line args prepared in electron main
-   */
-  private loadArgs() {
-  try {
-      const sharedObj = this.winRef.nativeWindow.require('electron').remote.getGlobal('sharedObj');
-      AppComponent.webBroketUrl = sharedObj.webBroketUrl || AppComponent.webBroketUrl;
-      this.IID        = sharedObj.iid || this.IID;
-      this.PrivateKey = sharedObj.pk  || this.PrivateKey;
-  } catch (err) {
-      // just ignore
-  }   }
   /// ..................................................................................................................
   /**
    *
